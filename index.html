@@ -100,4 +100,67 @@
         </div>
     </main>
 </body>
+    <!-- Conector de Supabase y Lógica del Tablón -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ⚠️ REEMPLAZA ESTOS DOS CAMPOS CON TUS DATOS DE SUPABASE
+        const SUPABASE_URL = "sb_publishable_3VKss6l6fLiNp8_4mNn8Pw_Chx0K2jM";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieHJ6anVjdHJobXp1dXZ2cGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NDIwMDIsImV4cCI6MjEwMDAxODAwMn0.ML-uca24cpvIWaj5n88tVjrhf0thEaN_jNGfh4rfuvI";
+
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Función para cargar proyectos desde la base de datos
+        async function cargarProyectos() {
+            const { data: proyectos, error } = await supabase
+                .from('proyectos')
+                .select('*')
+                .order('creado_el', { ascending: false });
+
+            if (error) {
+                console.error("Error cargando proyectos:", error);
+                return;
+            }
+
+            const contenedor = document.querySelector('main .grid');
+            
+            // Si hay proyectos en la base de datos, limpiamos los de ejemplo y ponemos los reales
+            if (proyectos && proyectos.length > 0) {
+                contenedor.innerHTML = ''; // Limpia los ejemplos fijos
+                
+                proyectos.forEach(proy => {
+                    // Convertimos la lista de socios en etiquetas visuales
+                    const etiquetas = proy.socio_buscado.map(socio => 
+                        `<span class="bg-indigo-50 text-indigo-700 text-xs font-medium px-2 py-1 rounded">${socio}</span>`
+                    ).join('');
+
+                    // Plantilla para cada tarjeta de proyecto
+                    const tarjeta = `
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-3">
+                                    <span class="text-xs font-bold tracking-wide uppercase bg-indigo-50 text-indigo-800 border border-indigo-200 px-2.5 py-0.5 rounded">\${proy.etapa}</span>
+                                    <span class="text-xs font-medium text-slate-500">📍 Universidades</span>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-900 mb-2">\${proy.nombre_proyecto}</h3>
+                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">\${proy.descripcion_corta}</p>
+                            </div>
+                            <div>
+                                <div class="mb-4">
+                                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Busca socio:</p>
+                                    <div class="flex flex-wrap gap-1">\${etiquetas}</div>
+                                </div>
+                                <a href="mailto:\${proy.email_contacto}" class="block text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-2.5 rounded-lg transition-colors">
+                                    Conectar por Email
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    contenedor.innerHTML += tarjeta;
+                });
+            }
+        }
+
+        // Ejecutar al cargar la página
+        document.addEventListener('DOMContentLoaded', cargarProyectos);
+    </script>
 </html>
