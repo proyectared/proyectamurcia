@@ -116,8 +116,13 @@
                 .select('*')
                 .order('creado_el', { ascending: false });
 
-            if (error) {
-                console.error("Error cargando proyectos:", error);
+        if (error) {
+                document.querySelector('main .grid').innerHTML = `
+                    <div class="col-span-full bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-center">
+                        <p class="font-bold">⚠️ Error de conexión con Supabase:</p>
+                        <p class="text-xs font-mono mt-1">${error.message || JSON.stringify(error)}</p>
+                    </div>
+                `;
                 return;
             }
 
