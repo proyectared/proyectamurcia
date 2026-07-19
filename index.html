@@ -55,31 +55,36 @@
     </main>
 
     <!-- Conector de Supabase y Lógica del Tablón -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <!-- Conector directo sin restricciones de librería -->
     <script>
-        // Credenciales unificadas y corregidas sin espacios
-        const SUPABASE_URL = "https://kbxrzjuctrhmzuuvpau.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieHJ6anVjdHJobXp1dXZ2cGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NDIwMDIsImV4cCI6MjEwMDAxODAwMn0.ML-uca24cpvIWaj5n88tVjrhf0thEaN_jNGfh4rfuvI";
-
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         async function cargarProyectos() {
             const contenedor = document.querySelector('main .grid');
+            const url = "https://kbxrzjuctrhmzuuvpau.supabase.co/rest/v1/proyectos?select=*&order=creado_el.desc";
             
             try {
-                const { data: proyectos, error } = await supabaseClient
-                    .from('proyectos')
-                    .select('*')
-                    .order('creado_el', { ascending: false });
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieHJ6anVjdHJobXp1dXZ2cGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NDIwMDIsImV4cCI6MjEwMDAxODAwMn0.ML-uca24cpvIWaj5n88tVjrhf0thEaN_jNGfh4rfuvI",
+                        'Authorization': "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieHJ6anVjdHJobXp1dXZ2cGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NDIwMDIsImV4cCI6MjEwMDAxODAwMn0.ML-uca24cpvIWaj5n88tVjrhf0thEaN_jNGfh4rfuvI"
+                    }
+                });
 
-                if (error) throw error;
+                if (!response.ok) throw new Error("Fallo en la respuesta del servidor");
+                const proyectos = await response.json();
 
                 if (proyectos && proyectos.length > 0) {
-                    contenedor.innerHTML = ''; // Limpiamos el texto de "Cargando..."
+                    contenedor.innerHTML = ''; 
                     
                     proyectos.forEach(proy => {
-                        const etiquetas = proy.socio_buscado.map(socio => 
-                            `<span class="bg-indigo-50 text-indigo-700 text-xs font-medium px-2 py-1 rounded">${socio}</span>`
+                        // Limpiamos el formato por si viene como texto plano o array
+                        let socios = proy.socio_buscado;
+                        if (typeof socios === 'string') {
+                            socios = socios.replace(/[{""}]/g, '').split(',');
+                        }
+                        
+                        const etiquetas = socios.map(socio => 
+                            `<span class="bg-indigo-50 text-indigo-700 text-xs font-medium px-2 py-1 rounded">${socio.trim()}</span>`
                         ).join('');
 
                         const tarjeta = `
@@ -112,7 +117,7 @@
                 contenedor.innerHTML = `
                     <div class="col-span-full bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-center">
                         <p class="font-bold">⚠️ Error al conectar con Supabase:</p>
-                        <p class="text-xs font-mono mt-1">${err.message || JSON.stringify(err)}</p>
+                        <p class="text-xs font-mono mt-1">${err.message}</p>
                     </div>
                 `;
             }
