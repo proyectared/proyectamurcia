@@ -103,32 +103,33 @@
     <!-- Conector de Supabase y Lógica del Tablón -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // ⚠️ REEMPLAZA ESTOS DOS CAMPOS CON TUS DATOS DE SUPABASE
-        const SUPABASE_URL = "sb_publishable_3VKss6l6fLiNp8_4mNn8Pw_Chx0K2jM";
+        // Credenciales oficiales de tu proyecto
+        const SUPABASE_URL = "https://kbxrzjuctrh mzuuvpau.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieHJ6anVjdHJobXp1dXZ2cGF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NDIwMDIsImV4cCI6MjEwMDAxODAwMn0.ML-uca24cpvIWaj5n88tVjrhf0thEaN_jNGfh4rfuvI";
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Inicialización corregida sin conflicto de nombres
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Función para cargar proyectos desde la base de datos
         async function cargarProyectos() {
-            const { data: proyectos, error } = await supabase
+            const { data: proyectos, error } = await supabaseClient
                 .from('proyectos')
                 .select('*')
                 .order('creado_el', { ascending: false });
 
-        if (error) {
-                document.querySelector('main .grid').innerHTML = `
+            const contenedor = document.querySelector('main .grid');
+
+            if (error) {
+                contenedor.innerHTML = `
                     <div class="col-span-full bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-center">
                         <p class="font-bold">⚠️ Error de conexión con Supabase:</p>
-                        <p class="text-xs font-mono mt-1">${error.message || JSON.stringify(error)}</p>
+                        <p class="text-xs font-mono mt-1">${error.message}</p>
                     </div>
                 `;
                 return;
             }
 
-            const contenedor = document.querySelector('main .grid');
-            
-            // Si hay proyectos en la base de datos, limpiamos los de ejemplo y ponemos los reales
+            // Si hay proyectos en la base de datos, limpiamos los fijos y ponemos los reales
             if (proyectos && proyectos.length > 0) {
                 contenedor.innerHTML = ''; // Limpia los ejemplos fijos
                 
@@ -143,18 +144,18 @@
                         <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-start mb-3">
-                                    <span class="text-xs font-bold tracking-wide uppercase bg-indigo-50 text-indigo-800 border border-indigo-200 px-2.5 py-0.5 rounded">\${proy.etapa}</span>
-                                    <span class="text-xs font-medium text-slate-500">📍 Universidades</span>
+                                    <span class="text-xs font-bold tracking-wide uppercase bg-indigo-50 text-indigo-800 border border-indigo-200 px-2.5 py-0.5 rounded">${proy.etapa}</span>
+                                    <span class="text-xs font-medium text-slate-500">📍 Región de Murcia</span>
                                 </div>
-                                <h3 class="text-xl font-bold text-slate-900 mb-2">\${proy.nombre_proyecto}</h3>
-                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">\${proy.descripcion_corta}</p>
+                                <h3 class="text-xl font-bold text-slate-900 mb-2">${proy.nombre_proyecto}</h3>
+                                <p class="text-slate-600 text-sm mb-4 line-clamp-2">${proy.descripcion_corta}</p>
                             </div>
                             <div>
                                 <div class="mb-4">
                                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Busca socio:</p>
-                                    <div class="flex flex-wrap gap-1">\${etiquetas}</div>
+                                    <div class="flex flex-wrap gap-1">${etiquetas}</div>
                                 </div>
-                                <a href="mailto:\${proy.email_contacto}" class="block text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-2.5 rounded-lg transition-colors">
+                                <a href="mailto:${proy.email_contacto}" class="block text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-2.5 rounded-lg transition-colors">
                                     Conectar por Email
                                 </a>
                             </div>
